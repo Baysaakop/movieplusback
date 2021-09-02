@@ -3,7 +3,7 @@ from django.db.models import Q, Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .models import Movie
+from .models import Movie, Rating, Genre
 from .serializers import MovieSerializer
 from rest_framework import viewsets
 
@@ -114,159 +114,76 @@ class MovieViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Movie.objects.all().order_by('-created_at')
-        name = self.request.query_params.get('name', None)
-        if name is not None:
-            queryset = queryset.filter(name__icontains=name).distinct()
+        title = self.request.query_params.get('title', None)
+        if title is not None:
+            queryset = queryset.filter(title__icontains=title).distinct()
         return queryset
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.view_count = instance.view_count + 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-# class FilmViewSet(viewsets.ModelViewSet):
-#     serializer_class = FilmSerializer
-#     queryset = Film.objects.all()
+    def create(self, request, *args, **kwargs):
+        user = Token.objects.get(key=request.data['token']).user
+        movie = Movie.objects.create(
+            title=request.data['title'],
+            created_by=user
+        )
+        updateMovie(movie, request)
+        serializer = MovieSerializer(movie)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-#     def get_queryset(self):
-#         queryset = Film.objects.all().order_by('-movie__created_at')
-#         name = self.request.query_params.get('name', None)
-#         genre = self.request.query_params.get('genre', None)
-#         yearfrom = self.request.query_params.get('yearfrom', None)
-#         yearto = self.request.query_params.get('yearto', None)
-#         member = self.request.query_params.get('member', None)
-#         actor = self.request.query_params.get('actor', None)
-#         user = self.request.query_params.get('user', None)
-#         state = self.request.query_params.get('state', None)
-#         order = self.request.query_params.get('order', None)
-#         movie = self.request.query_params.get('movie', None)
-#         queryset = filter(queryset, name, genre, yearfrom,
-#                           yearto, member, actor, user, state, order, movie)
-#         return queryset
-
-#     def retrieve(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         instance.movie.views = instance.movie.views + 1
-#         instance.movie.save()
-#         serializer = self.get_serializer(instance)
-#         return Response(serializer.data)
-
-#     def update(self, request, *args, **kwargs):
-#         film = self.get_object()
-#         action(film.movie, request)
-#         serializer = FilmSerializer(film)
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-#     def destroy(self, request, *args, **kwargs):
-#         try:
-#             instance = self.get_object()
-#             movie = instance.movie
-#             self.perform_destroy(instance)
-#             Movie.objects.filter(id=movie.id).delete()
-#         except Http404:
-#             pass
-#         return Response(status=status.HTTP_204_NO_CONTENT)
+    def update(self, request, *args, **kwargs):
+        movie = self.get_object()
+        user = Token.objects.get(key=request.data['token']).user
+        movie.updated_by = user
+        updateMovie(movie, request)
+        serializer = MovieSerializer(movie)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
-# class TempFilmViewSet(viewsets.ModelViewSet):
-#     serializer_class = TempFilmSerializer
-#     queryset = TempFilm.objects.all().order_by('-movie__created_at')
-
-#     def get_queryset(self):
-#         queryset = TempFilm.objects.all().order_by('-movie__created_at')
-#         filmid = self.request.query_params.get('filmid', None)
-#         if filmid is not None:
-#             if filmid == '0':
-#                 queryset = TempFilm.objects.filter(
-#                     filmid=0).order_by('movie__created_at')
-#             else:
-#                 queryset = TempFilm.objects.filter(
-#                     ~Q(filmid=0)).order_by('movie__created_at')
-#         return queryset
-
-#     def create(self, request, *args, **kwargs):
-#         user = Token.objects.get(key=request.data['token']).user
-#         tempfilm = None
-#         # CREATE
-#         if 'filmid' not in request.data:
-#             movie = Movie.objects.create(
-#                 name=request.data['name'],
-#                 created_by=user
-#             )
-#             updateMovie(movie, request)
-#             tempfilm = TempFilm.objects.create(movie=movie)
-#         # UPDATE
-#         else:
-#             film = Film.objects.get(pk=int(request.data['filmid']))
-#             movie = Movie.objects.create(
-#                 name=film.movie.name,
-#                 updated_by=user
-#             )
-#             copyMovie(movie, film.movie)
-#             updateMovie(movie, request)
-#             tempfilm = TempFilm.objects.create(movie=movie, filmid=film.id)
-#         serializer = TempFilmSerializer(tempfilm)
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-#     def update(self, request, *args, **kwargs):
-#         tempfilm = self.get_object()
-#         if 'accept' in request.data:
-#             # CREATE
-#             if tempfilm.filmid == 0:
-#                 film = Film.objects.create(movie=tempfilm.movie)
-#                 TempFilm.objects.filter(id=tempfilm.id).delete()
-#                 return Response(status=status.HTTP_200_OK)
-#             # UPDATE
-#             else:
-#                 film = Film.objects.get(pk=tempfilm.filmid)
-#                 film.movie.name = tempfilm.movie.name
-#                 film.movie.updated_by = tempfilm.movie.updated_by
-#                 copyMovie(film.movie, tempfilm.movie)
-#                 TempFilm.objects.filter(id=tempfilm.id).delete()
-#                 Movie.objects.filter(id=tempfilm.movie.id).delete()
-#                 return Response(status=status.HTTP_200_OK)
-#         elif 'decline' in request.data:
-#             TempFilm.objects.filter(id=tempfilm.id).delete()
-#             Movie.objects.filter(id=tempfilm.movie.id).delete()
-#             return Response(status=status.HTTP_200_OK)
-#         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-# def updateMovie(movie, request):
-#     if 'name' in request.data:
-#         movie.name = request.data['name']
-#     if 'description' in request.data:
-#         movie.description = request.data['description']
-#     if 'plot' in request.data:
-#         movie.plot = request.data['plot']
-#     if 'duration' in request.data:
-#         movie.duration = request.data['duration']
-#     if 'releasedate' in request.data:
-#         movie.releasedate = request.data['releasedate']
-#     if 'trailer' in request.data:
-#         movie.trailer = request.data['trailer']
-#     if 'poster' in request.data:
-#         movie.poster = request.data['poster']
-#     if 'landscape' in request.data:
-#         movie.landscape = request.data['landscape']
-#     if 'is_released' in request.data:
-#         if request.data['is_released'] == "true":
-#             movie.is_released = True
-#         else:
-#             movie.is_released = False
-#     if 'is_playing' in request.data:
-#         if request.data['is_playing'] == "true":
-#             movie.is_playing = True
-#         else:
-#             movie.is_playing = False
-#     if 'rating' in request.data:
-#         rating = Rating.objects.get(id=int(request.data['rating']))
-#         movie.rating = rating
-#     if 'genre' in request.data:
-#         movie.genre.clear()
-#         genres = request.data['genre'].split(",")
-#         for item in genres:
-#             movie.genre.add(int(item))
-#     movie.save()
-#     return movie
+def updateMovie(movie, request):
+    if 'title' in request.data:
+        movie.title = request.data['title']
+    if 'description' in request.data:
+        movie.description = request.data['description']
+    if 'plot' in request.data:
+        movie.plot = request.data['plot']
+    if 'duration' in request.data:
+        movie.duration = request.data['duration']
+    if 'releasedate' in request.data:
+        movie.releasedate = request.data['releasedate']
+    if 'trailer' in request.data:
+        movie.trailer = request.data['trailer']
+    if 'poster' in request.data:
+        movie.poster = request.data['poster']
+    if 'landscape' in request.data:
+        movie.landscape = request.data['landscape']
+    if 'is_released' in request.data:
+        if request.data['is_released'] == "true":
+            movie.is_released = True
+        else:
+            movie.is_released = False
+    if 'is_playing' in request.data:
+        if request.data['is_playing'] == "true":
+            movie.is_playing = True
+        else:
+            movie.is_playing = False
+    if 'rating' in request.data:
+        rating = Rating.objects.get(id=int(request.data['rating']))
+        movie.rating = rating
+    if 'genre' in request.data:
+        movie.genre.clear()
+        genres = request.data['genre'].split(",")
+        for item in genres:
+            movie.genre.add(int(item))
+    movie.save()
+    return movie
 
 
 # def copyMovie(movie, temp):

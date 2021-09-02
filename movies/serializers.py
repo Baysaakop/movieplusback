@@ -54,8 +54,9 @@ class ArtistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Artist
-        fields = ('id', 'name', 'firstname', 'lastname', 'biography', 'birthday', 'gender', 'avatar', 'occupation',
-                  'views', 'likes', 'follows', 'created_by', 'created_at', 'updated_by', 'updated_at')
+        fields = ('id', 'name', 'firstname', 'lastname', 'biography', 'birthdate', 'gender', 'avatar', 'occupation',
+                  'view_count', 'like_count', 'follow_count', 'facebook_channel', 'instagram_channel', 'twitter_channel', 'youtube_channel',
+                  'created_by', 'created_at', 'updated_by', 'updated_at')
 
 
 class MovieSerializer(serializers.ModelSerializer):

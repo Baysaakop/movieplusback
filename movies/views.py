@@ -46,6 +46,40 @@ class CastMemberViewSet(viewsets.ModelViewSet):
                 artist__id=int(artist))
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        user = Token.objects.get(key=request.data['token']).user
+        artist = Artist.objects.get(id=int(request.data['artist']))
+        film = Movie.objects.get(id=int(request.data['film']))
+        member = CastMember.objects.create(
+            artist=artist,
+            film=film,
+            created_by=user
+        )
+        if 'is_lead' in request.data:
+            member.is_lead = True
+        if 'role_name' in request.data:
+            member.role_name = request.data['role_name']
+        member.save()
+        serializer = CastMemberSerializer(member)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        member = self.get_object()
+        user = Token.objects.get(key=request.data['token']).user
+        if 'is_lead' in request.data:
+            if request.data['is_lead'] == "true":
+                member.is_lead = True
+            else:
+                member.is_lead = False
+        if 'role_name' in request.data:
+            member.role_name = request.data['role_name']
+        member.updated_by = user
+        member.save()
+        serializer = CastMemberSerializer(member)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
 
 class CrewMemberViewSet(viewsets.ModelViewSet):
     serializer_class = CrewMemberSerializer
@@ -62,6 +96,36 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 artist__id=int(artist))
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        user = Token.objects.get(key=request.data['token']).user
+        artist = Artist.objects.get(id=int(request.data['artist']))
+        film = Movie.objects.get(id=int(request.data['film']))
+        member = CrewMember.objects.create(
+            artist=artist,
+            film=film,
+            created_by=user
+        )
+        if 'role' in request.data:
+            arr = str(request.data['role']).split(',')
+            for item in arr:
+                member.role.add(int(item))
+        serializer = CrewMemberSerializer(member)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        member = self.get_object()
+        user = Token.objects.get(key=request.data['token']).user
+        if 'role' in request.data:
+            member.role.clear()
+            arr = str(request.data['role']).split(',')
+            for item in arr:
+                member.role.add(int(item))
+        member.updated_by = user
+        serializer = CrewMemberSerializer(member)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 # class ScoreViewSet(viewsets.ModelViewSet):
 #     serializer_class = ScoreSerializer
