@@ -83,10 +83,6 @@ class Artist(models.Model):
     instagram_channel = models.CharField(max_length=200, blank=True, null=True)
     twitter_channel = models.CharField(max_length=200, blank=True, null=True)
     youtube_channel = models.CharField(max_length=200, blank=True, null=True)
-    # likes = models.ManyToManyField(
-    #     User, null=True, blank=True, related_name="artist_likes")
-    # follows = models.ManyToManyField(
-    #     User, null=True, blank=True, related_name="artist_follows")
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='artist_created_by')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -110,20 +106,11 @@ class Movie(models.Model):
     production = models.ManyToManyField(Production, null=True, blank=True)
     view_count = models.IntegerField(default=0)
     like_count = models.IntegerField(default=0)
+    watched_count = models.IntegerField(default=0)
+    watchlist_count = models.IntegerField(default=0)
+    score_count = models.IntegerField(default=0)
     comment_count = models.IntegerField(default=0)
-    # likes = models.ManyToManyField(
-    #     User, null=True, blank=True, related_name="movie_likes")
-    # checks = models.ManyToManyField(
-    #     User, null=True, blank=True, related_name="movie_checks")
-    # watchlists = models.ManyToManyField(
-    #     User, null=True, blank=True, related_name="movie_watchlists")
-    # scores = models.ManyToManyField(
-    #     Score, null=True, blank=True, related_name="movie_scores")
-    # comments = models.ManyToManyField(
-    #     Comment, null=True, blank=True, related_name="movie_comments")
-    # members = models.ManyToManyField(Member, null=True, blank=True, related_name="movie_members")
-    # actors = models.ManyToManyField(Actor, null=True, blank=True, related_name="movie_actors")
-    score = models.IntegerField(default=0)
+    avg_score = models.IntegerField(default=0)
     poster = models.ImageField(
         upload_to='movies/%Y/%m/%d', null=True, blank=True)
     landscape = models.ImageField(

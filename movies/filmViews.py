@@ -1,3 +1,4 @@
+import string
 from django.http import Http404
 from django.db.models import Q, Count
 from rest_framework import status
@@ -59,55 +60,6 @@ from rest_framework import viewsets
 #             queryset = queryset.order_by('-movie__views')
 #     return queryset
 
-
-# def calculateScore(item):
-#     total = 0
-#     if (item.scores.count() == 0):
-#         return 0
-#     for obj in item.scores.all():
-#         total = total + obj.score
-#     average = int((total * 10) / item.scores.count())
-#     return average
-
-
-# def action(movie, request):
-#     user = Token.objects.get(key=request.data['token']).user
-#     if 'like' in request.data:
-#         if user in movie.likes.all():
-#             movie.likes.remove(user)
-#         else:
-#             movie.likes.add(user)
-#     if 'check' in request.data:
-#         if user in movie.checks.all():
-#             movie.checks.remove(user)
-#         else:
-#             movie.checks.add(user)
-#     if 'watchlist' in request.data:
-#         if user in movie.watchlists.all():
-#             movie.watchlists.remove(user)
-#         else:
-#             movie.watchlists.add(user)
-#     if 'score' in request.data:
-#         score = int(request.data['score'])
-#         user_score = movie.scores.filter(user=user).first()
-#         if user_score is None:
-#             user_score = Score.objects.create(
-#                 user=user,
-#                 score=score
-#             )
-#             movie.scores.add(user_score)
-#         else:
-#             if score == 0:
-#                 movie.scores.remove(user_score)
-#                 Score.objects.filter(id=user_score.id).delete()
-#             else:
-#                 user_score.score = score
-#                 user_score.save()
-#         movie.score = calculateScore(movie)
-#     movie.save()
-#     return movie
-
-
 class MovieViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSerializer
     queryset = Movie.objects.all().order_by('-created_at')
@@ -116,7 +68,8 @@ class MovieViewSet(viewsets.ModelViewSet):
         queryset = Movie.objects.all().order_by('-created_at')
         title = self.request.query_params.get('title', None)
         if title is not None:
-            queryset = queryset.filter(title__icontains=title).distinct()
+            queryset = queryset.filter(Q(title__icontains=title) | Q(
+                title__icontains=string.capwords(title))).distinct()
         return queryset
 
     def retrieve(self, request, *args, **kwargs):
@@ -184,25 +137,3 @@ def updateMovie(movie, request):
             movie.genre.add(int(item))
     movie.save()
     return movie
-
-
-# def copyMovie(movie, temp):
-#     movie.description = temp.description
-#     movie.plot = temp.plot
-#     movie.trailer = temp.trailer
-#     movie.duration = temp.duration
-#     movie.releasedate = temp.releasedate
-#     movie.releasedate = temp.releasedate
-#     movie.is_released = temp.is_released
-#     movie.is_playing = temp.is_playing
-#     movie.poster = temp.poster
-#     movie.landscape = temp.landscape
-#     movie.rating = temp.rating
-#     movie.genre.clear()
-#     for g in temp.genre.all():
-#         movie.genre.add(g)
-#     movie.production.clear()
-#     for p in temp.production.all():
-#         movie.production.add(p)
-#     movie.save()
-#     return movie

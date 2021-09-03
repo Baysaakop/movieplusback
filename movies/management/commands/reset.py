@@ -1,14 +1,16 @@
 from django.core.management.base import BaseCommand
 from movies.models import Movie
 
+
 class Command(BaseCommand):
-    def handle(self, *args, **kwargs):         
+    def handle(self, *args, **kwargs):
         for movie in Movie.objects.all():
-            # movie.views = 0
-            # movie.likes = 0
-            # movie.watched = 0
-            # movie.watchlist = 0
-            movie.score = 0
+            movie.view_count = 0
+            movie.like_count = 0
+            movie.watched_count = 0
+            movie.watchlist_count = 0
+            movie.score_count = 0
+            movie.avg_score = 0
             movie.save()
         # for artist in Artist.objects.all():
         #     artist.views = 0

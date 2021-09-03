@@ -1,3 +1,4 @@
+import string
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
@@ -17,7 +18,8 @@ class ArtistViewSet(viewsets.ModelViewSet):
         occupation = self.request.query_params.get('occupation', None)
         order = self.request.query_params.get('order', None)
         if name is not None:
-            queryset = queryset.filter(name__icontains=name)
+            queryset = queryset.filter(Q(name__icontains=name) | Q(
+                name__icontains=string.capwords(name))).distinct()
         if occupation is not None:
             queryset = queryset.filter(occupation__id=occupation)
         if order is not None:
