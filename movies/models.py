@@ -38,17 +38,18 @@ class Occupation(models.Model):
     def __str__(self):
         return self.name
 
-# class Score(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     score = models.IntegerField(default=0)
 
-# class Comment(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     comment = models.TextField()
-#     score = models.IntegerField(default=0)
-#     likes = models.ManyToManyField(User, null=True, blank=True, related_name="comment_likes")
-#     dislikes = models.ManyToManyField(User, null=True, blank=True, related_name="comment_dislikes")
-#     created_at = models.DateTimeField(auto_now_add=True)
+class Comment(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comment_user")
+    comment = models.TextField()
+    # score = models.IntegerField(default=0)
+    likers = models.ManyToManyField(
+        User, null=True, blank=True, related_name="film_comment_likes")
+    dislikers = models.ManyToManyField(
+        User, null=True, blank=True, related_name="film_comment_dislikes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 # class Review(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
@@ -73,7 +74,7 @@ class Artist(models.Model):
     biography = RichTextField(null=True, blank=True)
     birthdate = models.DateField(auto_now=False, blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
-    occupation = models.ManyToManyField(Occupation)
+    occupations = models.ManyToManyField(Occupation)
     avatar = models.ImageField(
         upload_to='artists/%Y/%m/%d', null=True, blank=True)
     view_count = models.IntegerField(default=0)
@@ -94,6 +95,31 @@ class Artist(models.Model):
         return self.name
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
+class Theater(models.Model):
+    name = models.CharField(max_length=50)
+    logo = models.ImageField(
+        upload_to='theaters/%Y/%m/%d', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Platform(models.Model):
+    name = models.CharField(max_length=50)
+    logo = models.ImageField(
+        upload_to='platforms/%Y/%m/%d', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Movie(models.Model):
     title = models.CharField(max_length=100)
     description = RichTextField(null=True, blank=True)
@@ -102,14 +128,17 @@ class Movie(models.Model):
     releasedate = models.DateField(auto_now=False, null=True, blank=True)
     rating = models.ForeignKey(
         Rating, on_delete=models.SET_NULL, null=True, blank=True)
-    genre = models.ManyToManyField(Genre, null=True, blank=True)
-    production = models.ManyToManyField(Production, null=True, blank=True)
+    genres = models.ManyToManyField(Genre, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
+    productions = models.ManyToManyField(Production, null=True, blank=True)
     view_count = models.IntegerField(default=0)
     like_count = models.IntegerField(default=0)
     watched_count = models.IntegerField(default=0)
     watchlist_count = models.IntegerField(default=0)
     score_count = models.IntegerField(default=0)
     comment_count = models.IntegerField(default=0)
+    comments = models.ManyToManyField(
+        Comment, null=True, related_name="film_comments")
     avg_score = models.IntegerField(default=0)
     poster = models.ImageField(
         upload_to='movies/%Y/%m/%d', null=True, blank=True)
@@ -117,7 +146,9 @@ class Movie(models.Model):
         upload_to='movies/%Y/%m/%d', null=True, blank=True)
     trailer = models.CharField(max_length=200, null=True, blank=True)
     is_released = models.BooleanField(default=True)
-    is_playing = models.BooleanField(default=False)
+    in_theater = models.BooleanField(default=False)
+    theaters = models.ManyToManyField(Theater, null=True, blank=True)
+    platforms = models.ManyToManyField(Platform, null=True, blank=True)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='movie_created_by')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -150,7 +181,7 @@ class CrewMember(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     film = models.ForeignKey(
         Movie, on_delete=models.CASCADE, null=True, blank=True)
-    role = models.ManyToManyField(Occupation, null=True)
+    roles = models.ManyToManyField(Occupation, null=True)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name='crew_member_created_by')
     created_at = models.DateTimeField(auto_now_add=True, null=True)

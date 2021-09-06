@@ -80,11 +80,11 @@ def updateArtist(artist, request):
         artist.gender = request.data['gender']
     if 'avatar' in request.data:
         artist.avatar = request.data['avatar']
-    if 'occupation' in request.data:
-        artist.occupation.clear()
-        arr = str(request.data['occupation']).split(',')
+    if 'occupations' in request.data:
+        artist.occupations.clear()
+        arr = str(request.data['occupations']).split(',')
         for item in arr:
-            artist.occupation.add(int(item))
+            artist.occupations.add(int(item))
     if 'facebook_channel' in request.data:
         artist.facebook_channel = request.data['facebook_channel']
     if 'instagram_channel' in request.data:

@@ -4,61 +4,10 @@ from django.db.models import Q, Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .models import Movie, Rating, Genre
+from .models import Comment, Movie, Rating, Genre
 from .serializers import MovieSerializer
 from rest_framework import viewsets
 
-
-# def filter(queryset, name, genre, yearfrom, yearto, member, actor, user, state, order, movie):
-#     if name is not None:
-#         queryset = queryset.filter(movie__name__icontains=name).distinct()
-#     if genre is not None:
-#         queryset = queryset.filter(movie__genre__id=genre).distinct()
-#     if yearfrom is not None:
-#         queryset = queryset.filter(
-#             movie__releasedate__year__gte=yearfrom).distinct()
-#     if yearto is not None:
-#         queryset = queryset.filter(
-#             movie__releasedate__year__lte=yearto).distinct()
-#     if member is not None:
-#         queryset = queryset.filter(
-#             movie__members__artist__id=member).distinct()
-#     if actor is not None:
-#         queryset = queryset.filter(movie__actors__artist__id=actor).distinct()
-#     if user is not None and state is not None:
-#         if state == 'like':
-#             queryset = queryset.filter(movie__likes__id=user).distinct()
-#         elif state == 'check':
-#             queryset = queryset.filter(movie__checks__id=user).distinct()
-#         elif state == 'watchlist':
-#             queryset = queryset.filter(movie__watchlists__id=user).distinct()
-#         elif state == 'score':
-#             queryset = queryset.filter(movie__scores__user__id=user).distinct()
-#     if movie is not None:
-#         queryset = queryset.filter(movie__id=movie).distinct()
-#     if order is not None:
-#         if (order == 'created_at'):
-#             queryset = queryset.order_by('-movie__created_at')
-#         elif (order == 'releasedate'):
-#             queryset = queryset.order_by('-movie__releasedate')
-#         elif (order == 'duration'):
-#             queryset = queryset.order_by('-movie__duration')
-#         elif (order == 'name'):
-#             queryset = queryset.order_by('movie__name')
-#         elif (order == 'score'):
-#             queryset = queryset.order_by('-movie__score')
-#         elif (order == 'likes'):
-#             queryset = queryset.annotate(likes_count=Count(
-#                 'movie__likes')).order_by('-likes_count')
-#         elif (order == 'checks'):
-#             queryset = queryset.annotate(checks_count=Count(
-#                 'movie__checks')).order_by('-checks_count')
-#         elif (order == 'watchlists'):
-#             queryset = queryset.annotate(watchlists_count=Count(
-#                 'movie__watchlists')).order_by('-watchlists_count')
-#         elif (order == 'views'):
-#             queryset = queryset.order_by('-movie__views')
-#     return queryset
 
 class MovieViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSerializer
@@ -67,9 +16,23 @@ class MovieViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Movie.objects.all().order_by('-created_at')
         title = self.request.query_params.get('title', None)
+        genre = self.request.query_params.get('genre', None)
+        yearfrom = self.request.query_params.get('yearfrom', None)
+        yearto = self.request.query_params.get('yearto', None)
+        order = self.request.query_params.get('order', None)
         if title is not None:
             queryset = queryset.filter(Q(title__icontains=title) | Q(
                 title__icontains=string.capwords(title))).distinct()
+        if genre is not None:
+            queryset = queryset.filter(genre__id=genre).distinct()
+        if yearfrom is not None:
+            queryset = queryset.filter(
+                releasedate__year__gte=yearfrom).distinct()
+        if yearto is not None:
+            queryset = queryset.filter(
+                releasedate__year__lte=yearto).distinct()
+        if order is not None:
+            queryset = queryset.order_by(order).distinct()
         return queryset
 
     def retrieve(self, request, *args, **kwargs):
@@ -93,6 +56,14 @@ class MovieViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         movie = self.get_object()
         user = Token.objects.get(key=request.data['token']).user
+        # if 'comment' in request.data:
+        #     comment = request.data['comment']
+        #     comment_obj = Comment.objects.create(
+        #         user=user,
+        #         comment=comment
+        #     )
+        #     movie.comments.add(comment_obj)
+        # else:
         movie.updated_by = user
         updateMovie(movie, request)
         serializer = MovieSerializer(movie)
@@ -122,18 +93,43 @@ def updateMovie(movie, request):
             movie.is_released = True
         else:
             movie.is_released = False
-    if 'is_playing' in request.data:
-        if request.data['is_playing'] == "true":
-            movie.is_playing = True
+    if 'in_theater' in request.data:
+        if request.data['in_theater'] == "true":
+            movie.in_theater = True
         else:
-            movie.is_playing = False
+            movie.in_theater = False
     if 'rating' in request.data:
         rating = Rating.objects.get(id=int(request.data['rating']))
         movie.rating = rating
-    if 'genre' in request.data:
-        movie.genre.clear()
-        genres = request.data['genre'].split(",")
+    if 'productions' in request.data:
+        movie.productions.clear()
+        productions = request.data['productions'].split(",")
+        for item in productions:
+            movie.productions.add(int(item))
+    if 'genres' in request.data:
+        movie.genres.clear()
+        genres = request.data['genres'].split(",")
         for item in genres:
-            movie.genre.add(int(item))
+            movie.genres.add(int(item))
+    if 'tags' in request.data:
+        movie.tags.clear()
+        tags = request.data['tags'].split(",")
+        for item in tags:
+            movie.tags.add(int(item))
+    if 'theaters' in request.data:
+        movie.theaters.clear()
+        theaters = request.data['theaters'].split(",")
+        for item in theaters:
+            movie.theaters.add(int(item))
+    if 'platforms' in request.data:
+        movie.platforms.clear()
+        platforms = request.data['platforms'].split(",")
+        for item in platforms:
+            movie.platforms.add(int(item))
+    if 'comments' in request.data:
+        movie.platforms.clear()
+        platforms = request.data['platforms'].split(",")
+        for item in platforms:
+            movie.platforms.add(int(item))
     movie.save()
     return movie
