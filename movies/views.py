@@ -42,21 +42,28 @@ class CommentViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    # def update(self, request, *args, **kwargs):
-    #     member = self.get_object()
-    #     user = Token.objects.get(key=request.data['token']).user
-    #     if 'is_lead' in request.data:
-    #         if request.data['is_lead'] == "true":
-    #             member.is_lead = True
-    #         else:
-    #             member.is_lead = False
-    #     if 'role_name' in request.data:
-    #         member.role_name = request.data['role_name']
-    #     member.updated_by = user
-    #     member.save()
-    #     serializer = CastMemberSerializer(member)
-    #     headers = self.get_success_headers(serializer.data)
-    #     return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+    def update(self, request, *args, **kwargs):
+        comment = self.get_object()
+        user = Token.objects.get(key=request.data['token']).user
+        if 'like' in request.data:
+            if user in comment.likers.all():
+                comment.likers.remove(user)
+            else:
+                comment.likers.add(user)
+        if 'dislike' in request.data:
+            if user in comment.dislikers.all():
+                comment.dislikers.remove(user)
+            else:
+                comment.dislikers.add(user)
+        if 'edit' in request.data:
+            if user == comment.user:
+                comment.comment = request.data['comment']
+            else:
+                return Response(None, status=status.HTTP_403_FORBIDDEN)
+        comment.save()
+        serializer = CommentSerializer(comment)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
