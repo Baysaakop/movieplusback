@@ -15,6 +15,12 @@ from movies.serializers import MovieSerializer, ArtistSerializer
 
 def calculateScore(film):
     scores = Score.objects.filter(film=film)
+    # if (scores.count() < 5):
+    #     film.avg_score = 0
+    #     return
+    if (scores.count() == 0):
+        film.avg_score = 0
+        return
     sum = 0
     for item in scores:
         sum += item.user_score

@@ -16,21 +16,34 @@ class MovieViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Movie.objects.all().order_by('-created_at')
         title = self.request.query_params.get('title', None)
+        search = self.request.query_params.get('search', None)
         genre = self.request.query_params.get('genre', None)
         yearfrom = self.request.query_params.get('yearfrom', None)
         yearto = self.request.query_params.get('yearto', None)
+        scorefrom = self.request.query_params.get('scorefrom', None)
+        scoreto = self.request.query_params.get('scoreto', None)
         order = self.request.query_params.get('order', None)
         if title is not None:
             queryset = queryset.filter(Q(title__icontains=title) | Q(
                 title__icontains=string.capwords(title))).distinct()
+        if search is not None:
+            queryset = queryset.filter(
+                Q(title__icontains=search) |
+                Q(title__icontains=string.capwords(search)) |
+                Q(tags__name__icontains=search) |
+                Q(tags__name__icontains=string.capwords(search))).distinct()
         if genre is not None:
-            queryset = queryset.filter(genre__id=genre).distinct()
+            queryset = queryset.filter(genres__id=genre).distinct()
         if yearfrom is not None:
             queryset = queryset.filter(
                 releasedate__year__gte=yearfrom).distinct()
         if yearto is not None:
             queryset = queryset.filter(
                 releasedate__year__lte=yearto).distinct()
+        if scorefrom is not None:
+            queryset = queryset.filter(avg_score__gte=scorefrom).distinct()
+        if scoreto is not None:
+            queryset = queryset.filter(avg_score__lte=scoreto).distinct()
         if order is not None:
             queryset = queryset.order_by(order).distinct()
         return queryset

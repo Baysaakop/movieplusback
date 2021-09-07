@@ -138,7 +138,7 @@ class Movie(models.Model):
     score_count = models.IntegerField(default=0)
     comment_count = models.IntegerField(default=0)
     comments = models.ManyToManyField(
-        Comment, null=True, related_name="film_comments")
+        Comment, null=True, blank=True, related_name="film_comments")
     avg_score = models.IntegerField(default=0)
     poster = models.ImageField(
         upload_to='movies/%Y/%m/%d', null=True, blank=True)
