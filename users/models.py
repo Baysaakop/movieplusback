@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from movies.models import Artist, Movie
+from articles.models import Article, Review
 
 USER_ROLES = (
     ("1", "admin"),
@@ -34,7 +35,15 @@ class Profile(models.Model):
     films_watched = models.ManyToManyField(Movie, related_name="films_watched")
     films_watchlist = models.ManyToManyField(
         Movie, related_name="films_watchlist")
+    articles_liked = models.ManyToManyField(
+        Article, related_name="articles_liked")
+    reviews_liked = models.ManyToManyField(
+        Review, related_name="reviews_liked")
     scores = models.ManyToManyField(Score)
+    articles_count = models.IntegerField(default=0)
+    articles_like_count = models.IntegerField(default=0)
+    reviews_count = models.IntegerField(default=0)
+    reviews_like_count = models.IntegerField(default=0)
     avatar = models.ImageField(
         upload_to=user_directory_path, null=True, blank=True)
     role = models.CharField(max_length=20, choices=USER_ROLES, default="3")

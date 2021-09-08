@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from movies.models import Movie
 from djrichtextfield.models import RichTextField
 
 
@@ -27,26 +28,51 @@ class Category(models.Model):
         return self.name
 
 
+class Comment(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="article_comment_user")
+    comment = models.TextField(null=True, blank=True)
+    likers = models.ManyToManyField(
+        User, null=True, blank=True, related_name="article_comment_likers")
+    dislikers = models.ManyToManyField(
+        User, null=True, blank=True, related_name="article_comment_dislikers")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class Article(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
+    outline = models.TextField(blank=True)
     content = RichTextField()
     thumbnail = models.ImageField(
         upload_to=article_directory_path, null=True, blank=True)
-    category = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, null=True, blank=True)
+    view_count = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0)
+    comments = models.ManyToManyField(Comment, null=True, blank=True)
     featured = models.BooleanField(default=False)
+    approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
-class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Review(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    film = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    outline = models.TextField(blank=True)
     content = RichTextField()
-    article = models.ForeignKey(
-        Article, related_name='comments', on_delete=models.CASCADE)
+    thumbnail = models.ImageField(
+        upload_to=article_directory_path, null=True, blank=True)
+    score = models.IntegerField(default=0)
+    view_count = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0)
+    comments = models.ManyToManyField(Comment, null=True, blank=True)
+    approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.username + " - " + self.article.title
+        return self.title

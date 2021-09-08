@@ -11,6 +11,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.conf import settings
 from movies.models import Movie, Artist
 from movies.serializers import MovieSerializer, ArtistSerializer
+from articles.models import Review
 
 
 def calculateScore(film):
@@ -20,12 +21,16 @@ def calculateScore(film):
     #     return
     if (scores.count() == 0):
         film.avg_score = 0
+        film.score_count = 0
+        film.save()
         return
     sum = 0
     for item in scores:
         sum += item.user_score
     avg = sum / scores.count() * 10
     film.avg_score = round(avg)
+    film.score_count = scores.count()
+    film.save()
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -94,15 +99,22 @@ class UserViewSet(viewsets.ModelViewSet):
                     if score > 0:
                         item.user_score = score
                         item.save()
+                        for rev in Review.objects.filter(author=user, film=film):
+                            rev.score = score
+                            rev.save()
                     else:
                         user.profile.scores.remove(item)
                         Score.objects.filter(id=item.id).delete()
-                        film.score_count -= 1
+                        for rev in Review.objects.filter(author=user, film=film):
+                            rev.score = 0
+                            rev.save()
                         break
             if exists is False:
                 obj = Score.objects.create(film=film, user_score=score)
                 user.profile.scores.add(obj)
-                film.score_count += 1
+                for rev in Review.objects.filter(author=user, film=film):
+                    rev.score = score
+                    rev.save()
             calculateScore(film)
             film.save()
         if 'like_artist' in request.data:
