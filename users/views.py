@@ -26,8 +26,8 @@ def calculateScore(film):
         return
     sum = 0
     for item in scores:
-        sum += item.user_score
-    avg = sum / scores.count() * 10
+        sum += item.user_score * 10
+    avg = sum / scores.count()
     film.avg_score = round(avg)
     film.score_count = scores.count()
     film.save()
