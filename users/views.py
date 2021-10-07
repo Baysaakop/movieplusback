@@ -46,6 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         film = None
         artist = None
+        flag = True
         if 'username' in request.data and user.username != request.data['username']:
             user.username = request.data['username']
         if 'first_name' in request.data and user.first_name != request.data['first_name']:
@@ -64,30 +65,63 @@ class UserViewSet(viewsets.ModelViewSet):
             if film in user.profile.films_liked.all():
                 user.profile.films_liked.remove(film)
                 film.like_count -= 1
+                flag = False
             else:
                 user.profile.films_liked.add(film)
                 film.like_count += 1
             film.save()
+            user.save()
+            serializer = UserSerializer(user)
+            serializer_film = MovieSerializer(film)
+            data = {
+                'user': serializer.data,
+                'film': serializer_film.data,
+                'flag': flag
+            }
+            headers = self.get_success_headers(serializer.data)
+            return Response(data, status=status.HTTP_200_OK, headers=headers)
         if 'watched' in request.data:
             film_id = request.data['film']
             film = Movie.objects.get(id=int(film_id))
             if film in user.profile.films_watched.all():
                 user.profile.films_watched.remove(film)
                 film.watched_count -= 1
+                flag = False
             else:
                 user.profile.films_watched.add(film)
                 film.watched_count += 1
             film.save()
+            user.save()
+            serializer = UserSerializer(user)
+            serializer_film = MovieSerializer(film)
+            data = {
+                'user': serializer.data,
+                'film': serializer_film.data,
+                'flag': flag
+            }
+            headers = self.get_success_headers(serializer.data)
+            return Response(data, status=status.HTTP_200_OK, headers=headers)
         if 'watchlist' in request.data:
             film_id = request.data['film']
             film = Movie.objects.get(id=int(film_id))
             if film in user.profile.films_watchlist.all():
                 user.profile.films_watchlist.remove(film)
                 film.watchlist_count -= 1
+                flag = False
             else:
                 user.profile.films_watchlist.add(film)
                 film.watchlist_count += 1
             film.save()
+            user.save()
+            serializer = UserSerializer(user)
+            serializer_film = MovieSerializer(film)
+            data = {
+                'user': serializer.data,
+                'film': serializer_film.data,
+                'flag': flag
+            }
+            headers = self.get_success_headers(serializer.data)
+            return Response(data, status=status.HTTP_200_OK, headers=headers)
         if 'score' in request.data:
             score = int(request.data['score'])
             film_id = request.data['film']
