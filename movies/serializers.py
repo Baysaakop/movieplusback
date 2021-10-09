@@ -1,7 +1,7 @@
 from re import T
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import Genre, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Comment, Movie, CastMember, CrewMember
+from .models import Genre, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Comment, Movie, Series, CastMember, CrewMember
 # from users.models import User, Profile
 from users.serializers import UserSerializer
 
@@ -92,22 +92,43 @@ class MovieSerializer(serializers.ModelSerializer):
         )
 
 
+class SeriesSerializer(serializers.ModelSerializer):
+    rating = RatingSerializer(read_only=True)
+    genres = GenreSerializer(read_only=True, many=True)
+    platforms = PlatformSerializer(read_only=True, many=True)
+    productions = ProductionSerializer(read_only=True, many=True)
+    comments = CommentSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Series
+        fields = (
+            'id', 'title', 'plot', 'seasons', 'episodes', 'duration', 'releasedate',
+            'rating', 'genres', 'tags', 'productions', 'platforms',
+            'view_count', 'like_count', 'watched_count', 'watchlist_count',
+            'score_count', 'comment_count', 'avg_score', 'poster', 'landscape',
+            'trailer', 'is_released', 'on_tv', 'comments',
+            'created_by', 'created_at', 'updated_by', 'updated_at'
+        )
+
+
 class CastMemberSerializer(serializers.ModelSerializer):
     artist = ArtistSerializer(read_only=True)
     film = MovieSerializer(read_only=True)
+    series = SeriesSerializer(read_only=True)
 
     class Meta:
         model = CastMember
-        fields = ('id', 'artist', 'film', 'is_lead', 'role_name',
+        fields = ('id', 'artist', 'film', 'series', 'is_lead', 'role_name',
                   'created_by', 'created_at', 'updated_by', 'updated_at')
 
 
 class CrewMemberSerializer(serializers.ModelSerializer):
     artist = ArtistSerializer(read_only=True)
     film = MovieSerializer(read_only=True)
+    series = SeriesSerializer(read_only=True)
     roles = OccupationSerializer(read_only=True, many=True)
 
     class Meta:
         model = CrewMember
-        fields = ('id', 'artist', 'film', 'roles', 'created_by',
+        fields = ('id', 'artist', 'film', 'series', 'roles', 'created_by',
                   'created_at', 'updated_by', 'updated_at')

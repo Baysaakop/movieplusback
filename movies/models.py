@@ -160,10 +160,52 @@ class Movie(models.Model):
         return self.title
 
 
+class Series(models.Model):
+    title = models.CharField(max_length=100)
+    plot = models.TextField(null=True, blank=True)
+    seasons = models.IntegerField(default=1)
+    episodes = models.IntegerField(default=10)
+    duration = models.IntegerField(default=30)
+    releasedate = models.DateField(auto_now=False, null=True, blank=True)
+    rating = models.ForeignKey(
+        Rating, on_delete=models.SET_NULL, null=True, blank=True)
+    genres = models.ManyToManyField(Genre, null=True, blank=True)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
+    productions = models.ManyToManyField(Production, null=True, blank=True)
+    view_count = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0)
+    watched_count = models.IntegerField(default=0)
+    watchlist_count = models.IntegerField(default=0)
+    score_count = models.IntegerField(default=0)
+    comment_count = models.IntegerField(default=0)
+    comments = models.ManyToManyField(
+        Comment, null=True, blank=True, related_name="series_comments")
+    avg_score = models.IntegerField(default=0)
+    poster = models.ImageField(
+        upload_to='series/%Y/%m/%d', null=True, blank=True)
+    landscape = models.ImageField(
+        upload_to='series/%Y/%m/%d', null=True, blank=True)
+    trailer = models.CharField(max_length=200, null=True, blank=True)
+    is_released = models.BooleanField(default=True)
+    on_tv = models.BooleanField(default=False)
+    platforms = models.ManyToManyField(Platform, null=True, blank=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='series_created_by')
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='series_updated_by')
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+
 class CastMember(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     film = models.ForeignKey(
         Movie, on_delete=models.CASCADE, null=True, blank=True)
+    series = models.ForeignKey(
+        Series, on_delete=models.CASCADE, null=True, blank=True)
     is_lead = models.BooleanField(default=False)
     role_name = models.CharField(max_length=100, null=True, blank=True)
     created_by = models.ForeignKey(
@@ -174,13 +216,17 @@ class CastMember(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
-        return self.artist.name + " - " + self.film.title
+        if self.series is not None:
+            return self.series.title + " - " + self.artist.name
+        return self.film.title + " - " + self.artist.name
 
 
 class CrewMember(models.Model):
     artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     film = models.ForeignKey(
         Movie, on_delete=models.CASCADE, null=True, blank=True)
+    series = models.ForeignKey(
+        Series, on_delete=models.CASCADE, null=True, blank=True)
     roles = models.ManyToManyField(Occupation, null=True)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name='crew_member_created_by')
@@ -190,4 +236,6 @@ class CrewMember(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
-        return self.artist.name + " - " + self.film.title
+        if self.series is not None:
+            return self.series.title + " - " + self.artist.name
+        return self.film.title + " - " + self.artist.name

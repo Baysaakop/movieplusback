@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from .models import (
-    Artist, Genre, Tag, Theater, Comment,
+    Artist, Genre, Series, Tag, Theater, Comment,
     Platform, Movie, Rating, Production,
     Occupation, CastMember, CrewMember
 )
@@ -88,15 +88,19 @@ class OccupationViewSet(viewsets.ModelViewSet):
 
 class CastMemberViewSet(viewsets.ModelViewSet):
     serializer_class = CastMemberSerializer
-    queryset = CastMember.objects.all().order_by('film__id')
+    queryset = CastMember.objects.all().order_by('-created_by')
 
     def get_queryset(self):
-        queryset = CastMember.objects.all().order_by('film__id')
+        queryset = CastMember.objects.all().order_by('-created_by')
         film = self.request.query_params.get('film', None)
+        series = self.request.query_params.get('series', None)
         artist = self.request.query_params.get('artist', None)
         if film is not None:
             queryset = queryset.filter(
                 film__id=int(film))
+        if series is not None:
+            queryset = queryset.filter(
+                series__id=int(series))
         if artist is not None:
             queryset = queryset.filter(
                 artist__id=int(artist))
@@ -105,12 +109,16 @@ class CastMemberViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user = Token.objects.get(key=request.data['token']).user
         artist = Artist.objects.get(id=int(request.data['artist']))
-        film = Movie.objects.get(id=int(request.data['film']))
         member = CastMember.objects.create(
             artist=artist,
-            film=film,
             created_by=user
         )
+        if 'film' in request.data:
+            film = Movie.objects.get(id=int(request.data['film']))
+            member.film = film
+        if 'series' in request.data:
+            series = Series.objects.get(id=int(request.data['series']))
+            member.series = series
         if 'is_lead' in request.data:
             member.is_lead = True
         if 'role_name' in request.data:
@@ -144,10 +152,14 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = CrewMember.objects.all().order_by('film__id')
         film = self.request.query_params.get('film', None)
+        series = self.request.query_params.get('series', None)
         artist = self.request.query_params.get('artist', None)
         if film is not None:
             queryset = queryset.filter(
                 film__id=int(film))
+        if series is not None:
+            queryset = queryset.filter(
+                series__id=int(series))
         if artist is not None:
             queryset = queryset.filter(
                 artist__id=int(artist))
@@ -159,9 +171,14 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
         film = Movie.objects.get(id=int(request.data['film']))
         member = CrewMember.objects.create(
             artist=artist,
-            film=film,
             created_by=user
         )
+        if 'film' in request.data:
+            film = Movie.objects.get(id=int(request.data['film']))
+            member.film = film
+        if 'series' in request.data:
+            series = Series.objects.get(id=int(request.data['series']))
+            member.series = series
         if 'roles' in request.data:
             arr = str(request.data['roles']).split(',')
             for item in arr:
