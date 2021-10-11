@@ -3,65 +3,98 @@ from django.db.models import Q, Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+
+from users.serializers import UserSerializer
 from .models import (
-    Artist, Genre, Series, Tag, Theater, Comment,
+    Artist, Genre, Series, Tag, Theater, Review,
     Platform, Movie, Rating, Production,
     Occupation, CastMember, CrewMember
 )
 from .serializers import (
-    CommentSerializer, GenreSerializer, TagSerializer, TheaterSerializer,
+    ReviewSerializer, GenreSerializer, TagSerializer, TheaterSerializer,
     PlatformSerializer, RatingSerializer, ProductionSerializer,
     OccupationSerializer, CastMemberSerializer, CrewMemberSerializer
 )
 from rest_framework import viewsets
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    queryset = Comment.objects.all().order_by('-created_at')
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    queryset = Review.objects.all().order_by('-created_at')
 
     def get_queryset(self):
-        queryset = Comment.objects.all().order_by('-created_at')
+        queryset = Review.objects.all().order_by('-created_at')
         film = self.request.query_params.get('film', None)
         if film is not None:
             film = Movie.objects.get(id=int(film))
-            queryset = film.comments.all().order_by('-created_at')
+            queryset = film.reviews.all().order_by('-created_at')
         return queryset
 
     def create(self, request, *args, **kwargs):
         user = Token.objects.get(key=request.data['token']).user
-        comment = Comment.objects.create(
+        spoiler = False
+        if request.data['is_spoiler'] == "true":
+            spoiler = True
+        review = Review.objects.create(
             user=user,
+            title=request.data['title'],
+            is_spoiler=spoiler,
             comment=request.data['comment'],
         )
         if 'film' in request.data:
             film = Movie.objects.get(id=int(request.data['film']))
-            film.comments.add(comment)
-        comment.save()
-        serializer = CommentSerializer(comment)
+            film.reviews.add(review)
+        review.save()
+        serializer = ReviewSerializer(review)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
-        comment = self.get_object()
+        review = self.get_object()
         user = Token.objects.get(key=request.data['token']).user
+        if 'is_spoiler' in request.data:
+            if request.data['is_spoiler'] == "true":
+                review.is_spoiler = True
+            else:
+                review.is_spoiler = False
+        if 'title' in request.data:
+            review.title = request.data['title']
+        if 'comment' in request.data:
+            review.comment = request.data['comment']
         if 'like' in request.data:
-            if user in comment.likers.all():
-                comment.likers.remove(user)
+            if review in user.profile.reviews_liked.all():
+                user.profile.reviews_liked.remove(review)
+                review.like_count -= 1
             else:
-                comment.likers.add(user)
+                user.profile.reviews_liked.add(review)
+                review.like_count += 1
+            user.profile.save()
+            review.save()
+            serializer = ReviewSerializer(review)
+            user_serializer = UserSerializer(user)
+            headers = self.get_success_headers(serializer.data)
+            return Response({'review': serializer.data, 'user': user_serializer.data}, status=status.HTTP_200_OK, headers=headers)
         if 'dislike' in request.data:
-            if user in comment.dislikers.all():
-                comment.dislikers.remove(user)
+            if review in user.profile.reviews_disliked.all():
+                user.profile.reviews_disliked.remove(review)
+                review.dislike_count -= 1
             else:
-                comment.dislikers.add(user)
-        if 'edit' in request.data:
-            if user == comment.user:
-                comment.comment = request.data['comment']
-            else:
-                return Response(None, status=status.HTTP_403_FORBIDDEN)
-        comment.save()
-        serializer = CommentSerializer(comment)
+                user.profile.reviews_disliked.add(review)
+                review.dislike_count += 1
+            user.profile.save()
+            review.save()
+            serializer = ReviewSerializer(review)
+            user_serializer = UserSerializer(user)
+            headers = self.get_success_headers(serializer.data)
+            return Response({'review': serializer.data, 'user': user_serializer.data}, status=status.HTTP_200_OK, headers=headers)
+        # if 'edit' in request.data:
+        #     if user == comment.user:
+        #         comment.comment = request.data['comment']
+        #     else:
+        #         return Response(None, status=status.HTTP_403_FORBIDDEN)
+        review.save()
+        serializer = ReviewSerializer(review)
+        user = UserSerializer(user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 

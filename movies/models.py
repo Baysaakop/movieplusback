@@ -39,17 +39,20 @@ class Occupation(models.Model):
         return self.name
 
 
-class Comment(models.Model):
+class Review(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="comment_user")
-    comment = models.TextField()
-    # score = models.IntegerField(default=0)
-    likers = models.ManyToManyField(
-        User, null=True, blank=True, related_name="film_comment_likes")
-    dislikers = models.ManyToManyField(
-        User, null=True, blank=True, related_name="film_comment_dislikes")
+    title = models.CharField(max_length=200)
+    comment = RichTextField()
+    is_spoiler = models.BooleanField(default=False)
+    score = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0)
+    dislike_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.username + ": " + self.title
 
 # class Review(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
@@ -136,9 +139,9 @@ class Movie(models.Model):
     watched_count = models.IntegerField(default=0)
     watchlist_count = models.IntegerField(default=0)
     score_count = models.IntegerField(default=0)
-    comment_count = models.IntegerField(default=0)
-    comments = models.ManyToManyField(
-        Comment, null=True, blank=True, related_name="film_comments")
+    review_count = models.IntegerField(default=0)
+    reviews = models.ManyToManyField(
+        Review, null=True, blank=True, related_name="film_reviews")
     avg_score = models.IntegerField(default=0)
     poster = models.ImageField(
         upload_to='movies/%Y/%m/%d', null=True, blank=True)
@@ -177,9 +180,9 @@ class Series(models.Model):
     watched_count = models.IntegerField(default=0)
     watchlist_count = models.IntegerField(default=0)
     score_count = models.IntegerField(default=0)
-    comment_count = models.IntegerField(default=0)
-    comments = models.ManyToManyField(
-        Comment, null=True, blank=True, related_name="series_comments")
+    review_count = models.IntegerField(default=0)
+    reviews = models.ManyToManyField(
+        Review, null=True, blank=True, related_name="series_reviews")
     avg_score = models.IntegerField(default=0)
     poster = models.ImageField(
         upload_to='series/%Y/%m/%d', null=True, blank=True)

@@ -4,7 +4,7 @@ from django.db.models import Q, Count
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .models import Comment, Movie, Rating, Genre
+from .models import Movie, Rating, Genre
 from .serializers import MovieSerializer
 from rest_framework import viewsets
 
@@ -135,11 +135,6 @@ def updateMovie(movie, request):
         for item in theaters:
             movie.theaters.add(int(item))
     if 'platforms' in request.data:
-        movie.platforms.clear()
-        platforms = request.data['platforms'].split(",")
-        for item in platforms:
-            movie.platforms.add(int(item))
-    if 'comments' in request.data:
         movie.platforms.clear()
         platforms = request.data['platforms'].split(",")
         for item in platforms:

@@ -1,7 +1,7 @@
 from re import T
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import Genre, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Comment, Movie, Series, CastMember, CrewMember
+from .models import Genre, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Review, Movie, Series, CastMember, CrewMember
 # from users.models import User, Profile
 from users.serializers import UserSerializer
 
@@ -62,14 +62,14 @@ class ArtistSerializer(serializers.ModelSerializer):
         )
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
 
     user = UserSerializer(read_only=True)
 
     class Meta:
-        model = Comment
-        fields = ('id', 'user', 'comment', 'likers',
-                  'dislikers', 'created_at', 'updated_at')
+        model = Review
+        fields = ('id', 'user', 'title', 'comment', 'is_spoiler', 'score',
+                  'like_count', 'dislike_count', 'created_at', 'updated_at')
 
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -78,7 +78,7 @@ class MovieSerializer(serializers.ModelSerializer):
     theaters = TheaterSerializer(read_only=True, many=True)
     platforms = PlatformSerializer(read_only=True, many=True)
     productions = ProductionSerializer(read_only=True, many=True)
-    comments = CommentSerializer(read_only=True, many=True)
+    # reviews = ReviewSerializer(read_only=True, many=True)
 
     class Meta:
         model = Movie
@@ -86,8 +86,8 @@ class MovieSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'plot', 'duration', 'releasedate',
             'rating', 'genres', 'tags', 'productions', 'theaters', 'platforms',
             'view_count', 'like_count', 'watched_count', 'watchlist_count',
-            'score_count', 'comment_count', 'avg_score', 'poster', 'landscape',
-            'trailer', 'is_released', 'in_theater', 'comments',
+            'score_count', 'review_count', 'avg_score', 'poster', 'landscape',
+            'trailer', 'is_released', 'in_theater', 'reviews',
             'created_by', 'created_at', 'updated_by', 'updated_at'
         )
 
@@ -97,7 +97,7 @@ class SeriesSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(read_only=True, many=True)
     platforms = PlatformSerializer(read_only=True, many=True)
     productions = ProductionSerializer(read_only=True, many=True)
-    comments = CommentSerializer(read_only=True, many=True)
+    reviews = ReviewSerializer(read_only=True, many=True)
 
     class Meta:
         model = Series
@@ -105,8 +105,8 @@ class SeriesSerializer(serializers.ModelSerializer):
             'id', 'title', 'plot', 'seasons', 'episodes', 'duration', 'releasedate',
             'rating', 'genres', 'tags', 'productions', 'platforms',
             'view_count', 'like_count', 'watched_count', 'watchlist_count',
-            'score_count', 'comment_count', 'avg_score', 'poster', 'landscape',
-            'trailer', 'is_released', 'on_tv', 'comments',
+            'score_count', 'review_count', 'avg_score', 'poster', 'landscape',
+            'trailer', 'is_released', 'on_tv', 'reviews',
             'created_by', 'created_at', 'updated_by', 'updated_at'
         )
 
