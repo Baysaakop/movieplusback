@@ -4,19 +4,28 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordResetForm
 from django.conf import settings
 from django.utils.translation import gettext as _
-from .models import Profile, Score
+from .models import Profile, FilmScore, SeriesScore
 
 
-class ScoreSerializer(serializers.ModelSerializer):
+class FilmScoreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Score
+        model = FilmScore
         fields = (
             'id', 'film', 'user_score'
         )
 
 
+class SeriesScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SeriesScore
+        fields = (
+            'id', 'series', 'user_score'
+        )
+
+
 class ProfileSerializer(serializers.ModelSerializer):
-    scores = ScoreSerializer(many=True)
+    film_scores = FilmScoreSerializer(many=True)
+    series_scores = SeriesScoreSerializer(many=True)
 
     class Meta:
         model = Profile

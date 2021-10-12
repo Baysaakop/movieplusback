@@ -10,8 +10,8 @@ from .serializers import (
     ArticleSerializer, ReviewSerializer
 )
 from rest_framework import viewsets, filters
-from users.models import Score
-from users.views import calculateScore
+# from users.models import Score
+# from users.views import calculateScore
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -198,22 +198,22 @@ def updateArticle(article, request):
         article.outline = request.data['outline']
     if 'content' in request.data:
         article.content = request.data['content']
-    if 'score' in request.data:
-        article.score = int(request.data['score'])
-        score = article.author.profile.scores.all().filter(film=article.film).first()
-        if int(request.data['score']) > 0:
-            if score is not None:
-                score.user_score = int(request.data['score'])
-                score.save()
-            else:
-                score = Score.objects.create(
-                    film=article.film, user_score=int(request.data['score']))
-                article.author.profile.scores.add(score)
-                article.author.profile.save()
-        else:
-            if score is not None:
-                Score.objects.filter(id=score.id).delete()
-        calculateScore(article.film)
+    # if 'score' in request.data:
+    #     article.score = int(request.data['score'])
+    #     score = article.author.profile.scores.all().filter(film=article.film).first()
+    #     if int(request.data['score']) > 0:
+    #         if score is not None:
+    #             score.user_score = int(request.data['score'])
+    #             score.save()
+    #         else:
+    #             score = Score.objects.create(
+    #                 film=article.film, user_score=int(request.data['score']))
+    #             article.author.profile.scores.add(score)
+    #             article.author.profile.save()
+    #     else:
+    #         if score is not None:
+    #             Score.objects.filter(id=score.id).delete()
+    #     calculateScore(article.film)
     if 'thumbnail' in request.data:
         article.thumbnail = request.data['thumbnail']
     article.save()

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Profile, Score
+from .models import Profile, FilmScore, SeriesScore
 
 admin.site.register(Profile)
-admin.site.register(Score)
+admin.site.register(FilmScore)
+admin.site.register(SeriesScore)

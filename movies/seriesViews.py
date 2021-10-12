@@ -68,14 +68,6 @@ class SeriesViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         series = self.get_object()
         user = Token.objects.get(key=request.data['token']).user
-        # if 'comment' in request.data:
-        #     comment = request.data['comment']
-        #     comment_obj = Comment.objects.create(
-        #         user=user,
-        #         comment=comment
-        #     )
-        #     movie.comments.add(comment_obj)
-        # else:
         series.updated_by = user
         updateSeries(series, request)
         serializer = SeriesSerializer(series)

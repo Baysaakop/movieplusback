@@ -128,6 +128,7 @@ class CastMemberViewSet(viewsets.ModelViewSet):
         film = self.request.query_params.get('film', None)
         series = self.request.query_params.get('series', None)
         artist = self.request.query_params.get('artist', None)
+        is_lead = self.request.query_params.get('is_lead', None)
         if film is not None:
             queryset = queryset.filter(
                 film__id=int(film))
@@ -137,6 +138,11 @@ class CastMemberViewSet(viewsets.ModelViewSet):
         if artist is not None:
             queryset = queryset.filter(
                 artist__id=int(artist))
+        if is_lead is not None:
+            if is_lead == 'true':
+                queryset = queryset.filter(is_lead=True)
+            else:
+                queryset = queryset.filter(is_lead=False)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -201,7 +207,6 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user = Token.objects.get(key=request.data['token']).user
         artist = Artist.objects.get(id=int(request.data['artist']))
-        film = Movie.objects.get(id=int(request.data['film']))
         member = CrewMember.objects.create(
             artist=artist,
             created_by=user
@@ -216,6 +221,7 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
             arr = str(request.data['roles']).split(',')
             for item in arr:
                 member.roles.add(int(item))
+        member.save()
         serializer = CrewMemberSerializer(member)
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -233,6 +239,7 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
             for item in arr:
                 member.roles.add(int(item))
         member.updated_by = user
+        member.save()
         serializer = CrewMemberSerializer(member)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
