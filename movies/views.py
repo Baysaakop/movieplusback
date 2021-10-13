@@ -25,9 +25,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Review.objects.all().order_by('-created_at')
         film = self.request.query_params.get('film', None)
+        series = self.request.query_params.get('series', None)
         if film is not None:
             film = Movie.objects.get(id=int(film))
             queryset = film.reviews.all().order_by('-created_at')
+        if series is not None:
+            series = Series.objects.get(id=int(series))
+            queryset = series.reviews.all().order_by('-created_at')
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -44,6 +48,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if 'film' in request.data:
             film = Movie.objects.get(id=int(request.data['film']))
             film.reviews.add(review)
+        if 'series' in request.data:
+            series = Series.objects.get(id=int(request.data['series']))
+            series.reviews.add(review)
         review.save()
         serializer = ReviewSerializer(review)
         headers = self.get_success_headers(serializer.data)
@@ -129,6 +136,7 @@ class CastMemberViewSet(viewsets.ModelViewSet):
         series = self.request.query_params.get('series', None)
         artist = self.request.query_params.get('artist', None)
         is_lead = self.request.query_params.get('is_lead', None)
+        type = self.request.query_params.get('type', None)
         if film is not None:
             queryset = queryset.filter(
                 film__id=int(film))
@@ -143,6 +151,12 @@ class CastMemberViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(is_lead=True)
             else:
                 queryset = queryset.filter(is_lead=False)
+        if type is not None:
+            if type == "film":
+                queryset = queryset.filter(
+                    film__isnull=False)
+            if type == "series":
+                queryset = queryset.filter(series__isnull=False)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -193,6 +207,7 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
         film = self.request.query_params.get('film', None)
         series = self.request.query_params.get('series', None)
         artist = self.request.query_params.get('artist', None)
+        type = self.request.query_params.get('type', None)
         if film is not None:
             queryset = queryset.filter(
                 film__id=int(film))
@@ -202,6 +217,12 @@ class CrewMemberViewSet(viewsets.ModelViewSet):
         if artist is not None:
             queryset = queryset.filter(
                 artist__id=int(artist))
+        if type is not None:
+            if type == "film":
+                queryset = queryset.filter(
+                    film__isnull=False)
+            if type == "series":
+                queryset = queryset.filter(series__isnull=False)
         return queryset
 
     def create(self, request, *args, **kwargs):

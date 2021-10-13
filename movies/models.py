@@ -54,21 +54,6 @@ class Review(models.Model):
     def __str__(self):
         return self.user.username + ": " + self.title
 
-# class Review(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-#     title = models.CharField(max_length=100)
-#     content = RichTextField()
-#     thumbnail = models.ImageField(upload_to='review/%Y/%m/%d', null=True, blank=True)
-#     score = models.IntegerField(default=0)
-#     views = models.IntegerField(default=0)
-#     likes = models.ManyToManyField(User, related_name="review_likes", null=True, blank=True)
-#     dislikes = models.ManyToManyField(User, related_name="review_dislikes", null=True, blank=True)
-#     comments = models.ManyToManyField(Comment, null=True, blank=True, related_name="review_comments")
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.title
-
 
 class Artist(models.Model):
     name = models.CharField(max_length=100)
