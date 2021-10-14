@@ -1,6 +1,7 @@
 import string
 from django.http import Http404
 from django.db.models import Q, Count
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -23,6 +24,8 @@ class MovieViewSet(viewsets.ModelViewSet):
         scorefrom = self.request.query_params.get('scorefrom', None)
         scoreto = self.request.query_params.get('scoreto', None)
         order = self.request.query_params.get('order', None)
+        user = self.request.query_params.get('user', None)
+        action = self.request.query_params.get('action', None)
         if title is not None:
             queryset = queryset.filter(Q(title__icontains=title) | Q(
                 title__icontains=string.capwords(title))).distinct()
@@ -44,6 +47,22 @@ class MovieViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(avg_score__gte=scorefrom).distinct()
         if scoreto is not None:
             queryset = queryset.filter(avg_score__lte=scoreto).distinct()
+        if user is not None and action is not None:
+            user_obj = User.objects.get(pk=int(user))
+            list = []
+            if action == "watched":
+                for film in reversed(user_obj.profile.films_watched.all()):
+                    list.append(film)
+            elif action == "liked":
+                for film in reversed(user_obj.profile.films_liked.all()):
+                    list.append(film)
+            elif action == "watchlist":
+                for film in reversed(user_obj.profile.films_watchlist.all()):
+                    list.append(film)
+            elif action == "scores":
+                for score in reversed(user_obj.profile.film_scores.all()):
+                    list.append(score.film)
+            queryset = list
         if order is not None:
             queryset = queryset.order_by(order).distinct()
         return queryset

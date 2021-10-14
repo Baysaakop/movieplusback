@@ -1,6 +1,6 @@
 import string
 from django.db.models import Q
-from rest_framework import status
+from rest_framework import status, pagination
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from .models import Artist
@@ -8,9 +8,14 @@ from .serializers import ArtistSerializer
 from rest_framework import viewsets
 
 
+class ArtistPagination(pagination.PageNumberPagination):
+    page_size = 40
+
+
 class ArtistViewSet(viewsets.ModelViewSet):
     serializer_class = ArtistSerializer
     queryset = Artist.objects.all().order_by('-created_at')
+    pagination_class = ArtistPagination
 
     def get_queryset(self):
         queryset = Artist.objects.all().order_by('-created_at')

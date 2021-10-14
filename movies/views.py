@@ -1,6 +1,6 @@
 from django.http import Http404
 from django.db.models import Q, Count
-from rest_framework import status
+from rest_framework import status, pagination
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
@@ -126,9 +126,14 @@ class OccupationViewSet(viewsets.ModelViewSet):
     queryset = Occupation.objects.all().order_by('name')
 
 
+class MemberPagination(pagination.PageNumberPagination):
+    page_size = 100
+
+
 class CastMemberViewSet(viewsets.ModelViewSet):
     serializer_class = CastMemberSerializer
     queryset = CastMember.objects.all().order_by('-created_by')
+    pagination_class = MemberPagination
 
     def get_queryset(self):
         queryset = CastMember.objects.all().order_by('-created_by')
@@ -201,6 +206,7 @@ class CastMemberViewSet(viewsets.ModelViewSet):
 class CrewMemberViewSet(viewsets.ModelViewSet):
     serializer_class = CrewMemberSerializer
     queryset = CrewMember.objects.all().order_by('film__id')
+    pagination_class = MemberPagination
 
     def get_queryset(self):
         queryset = CrewMember.objects.all().order_by('film__id')
