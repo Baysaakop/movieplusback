@@ -1,5 +1,6 @@
 import string
 from django.db.models import Q
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -22,6 +23,8 @@ class SeriesViewSet(viewsets.ModelViewSet):
         scorefrom = self.request.query_params.get('scorefrom', None)
         scoreto = self.request.query_params.get('scoreto', None)
         order = self.request.query_params.get('order', None)
+        user = self.request.query_params.get('user', None)
+        action = self.request.query_params.get('action', None)
         if title is not None:
             queryset = queryset.filter(Q(title__icontains=title) | Q(
                 title__icontains=string.capwords(title))).distinct()
@@ -43,6 +46,22 @@ class SeriesViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(avg_score__gte=scorefrom).distinct()
         if scoreto is not None:
             queryset = queryset.filter(avg_score__lte=scoreto).distinct()
+        if user is not None and action is not None:
+            user_obj = User.objects.get(pk=int(user))
+            list = []
+            if action == "watched":
+                for series in reversed(user_obj.profile.series_watched.all()):
+                    list.append(series)
+            elif action == "liked":
+                for series in reversed(user_obj.profile.series_liked.all()):
+                    list.append(series)
+            elif action == "watchlist":
+                for series in reversed(user_obj.profile.series_watchlist.all()):
+                    list.append(series)
+            elif action == "scores":
+                for score in reversed(user_obj.profile.series_scores.all()):
+                    list.append(score.series)
+            queryset = list
         if order is not None:
             queryset = queryset.order_by(order).distinct()
         return queryset

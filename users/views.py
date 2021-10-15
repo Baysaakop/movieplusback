@@ -62,18 +62,36 @@ class UserViewSet(viewsets.ModelViewSet):
         film = None
         artist = None
         flag = True
-        if 'username' in request.data and user.username != request.data['username']:
+        if 'username' in request.data:
             user.username = request.data['username']
-        if 'first_name' in request.data and user.first_name != request.data['first_name']:
+        if 'first_name' in request.data:
             user.first_name = request.data['first_name']
-        if 'last_name' in request.data and user.last_name != request.data['last_name']:
+        if 'last_name' in request.data:
             user.last_name = request.data['last_name']
-        if 'phone_number' in request.data and user.profile.phone_number != request.data['phone_number']:
+        if 'description' in request.data:
+            user.profile.description = request.data['description']
+        if 'phone_number' in request.data:
             user.profile.phone_number = request.data['phone_number']
-        if 'birth_date' in request.data and user.profile.birthday != request.data['birth_date']:
-            user.profile.birthday = request.data['birth_date']
+        if 'facebook_channel' in request.data:
+            user.profile.facebook_channel = request.data['facebook_channel']
+        if 'instagram_channel' in request.data:
+            user.profile.instagram_channel = request.data['instagram_channel']
+        if 'twitter_channel' in request.data:
+            user.profile.twitter_channel = request.data['twitter_channel']
+        if 'youtube_channel' in request.data:
+            user.profile.youtube_channel = request.data['youtube_channel']
         if 'avatar' in request.data and user:
             user.profile.avatar = request.data['avatar']
+        # FOLLOW
+        if 'follow' in request.data:
+            target = User.objects.get(pk=int(request.data['user']))
+            if target in user.profile.following.all():
+                user.profile.following.remove(target)
+                target.profile.followers.remove(user)
+            else:
+                user.profile.following.add(target)
+                target.profile.followers.add(user)
+            target.save()
         # FILM ACTIONS
         if 'film' in request.data:
             film_id = request.data['film']

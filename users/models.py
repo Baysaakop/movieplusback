@@ -32,36 +32,41 @@ class Profile(models.Model):
     description = models.TextField(max_length=500, blank=True)
     phone_number = models.CharField(max_length=30, blank=True)
     birthday = models.DateField(null=True, blank=True)
+    # User lists
+    following = models.ManyToManyField(
+        User, related_name="following", null=True, blank=True)
+    followers = models.ManyToManyField(
+        User, related_name="followers", null=True, blank=True)
     # Artist lists
     artists_liked = models.ManyToManyField(
-        Artist, related_name="artists_liked")
+        Artist, related_name="artists_liked", null=True, blank=True)
     artists_followed = models.ManyToManyField(
-        Artist, related_name="artists_followed")
+        Artist, related_name="artists_followed", null=True, blank=True)
     # Film lists
-    films_liked = models.ManyToManyField(Movie, related_name="films_liked")
-    films_watched = models.ManyToManyField(Movie, related_name="films_watched")
+    films_liked = models.ManyToManyField(
+        Movie, related_name="films_liked", null=True, blank=True)
+    films_watched = models.ManyToManyField(
+        Movie, related_name="films_watched", null=True, blank=True)
     films_watchlist = models.ManyToManyField(
-        Movie, related_name="films_watchlist")
-    film_scores = models.ManyToManyField(FilmScore)
+        Movie, related_name="films_watchlist", null=True, blank=True)
+    film_scores = models.ManyToManyField(FilmScore, null=True, blank=True)
     # Series lists
-    series_liked = models.ManyToManyField(Series, related_name="series_liked")
+    series_liked = models.ManyToManyField(
+        Series, related_name="series_liked", null=True, blank=True)
     series_watched = models.ManyToManyField(
-        Series, related_name="series_watched")
+        Series, related_name="series_watched", null=True, blank=True)
     series_watchlist = models.ManyToManyField(
-        Series, related_name="series_watchlist")
-    series_scores = models.ManyToManyField(SeriesScore)
-    # Article lists
-    articles_liked = models.ManyToManyField(
-        Article, related_name="articles_liked")
+        Series, related_name="series_watchlist", null=True, blank=True)
+    series_scores = models.ManyToManyField(SeriesScore, null=True, blank=True)
     # Review lists
     reviews_liked = models.ManyToManyField(
-        Review, related_name="reviews_liked")
+        Review, related_name="reviews_liked", null=True, blank=True)
     reviews_disliked = models.ManyToManyField(
-        Review, related_name="reviews_disliked")
-    articles_count = models.IntegerField(default=0)
-    articles_like_count = models.IntegerField(default=0)
-    reviews_count = models.IntegerField(default=0)
-    reviews_like_count = models.IntegerField(default=0)
+        Review, related_name="reviews_disliked", null=True, blank=True)
+    facebook_channel = models.CharField(max_length=200, blank=True, null=True)
+    instagram_channel = models.CharField(max_length=200, blank=True, null=True)
+    twitter_channel = models.CharField(max_length=200, blank=True, null=True)
+    youtube_channel = models.CharField(max_length=200, blank=True, null=True)
     avatar = models.ImageField(
         upload_to=user_directory_path, null=True, blank=True)
     role = models.CharField(max_length=20, choices=USER_ROLES, default="3")
