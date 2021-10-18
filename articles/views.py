@@ -83,22 +83,23 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ArticleViewSet(viewsets.ModelViewSet):
     serializer_class = ArticleSerializer
-    queryset = Article.objects.filter(approved=True).order_by('-created_at')
+    queryset = Article.objects.order_by('-created_at')
 
     def get_queryset(self):
-        queryset = Article.objects.filter(
-            approved=True).order_by('-created_at')
+        # queryset = Article.objects.filter(
+        #     approved=True).order_by('-created_at')
+        queryset = Article.objects.order_by('-created_at')
         author = self.request.query_params.get('author', None)
         title = self.request.query_params.get('title', None)
-        waiting = self.request.query_params.get('waiting', None)
+        # waiting = self.request.query_params.get('waiting', None)
         if author is not None:
             user = User.objects.get(id=int(author))
             queryset = queryset.filter(author=user)
         if title is not None:
             queryset = queryset.filter(title__icontains=title)
-        if waiting is not None:
-            queryset = Article.objects.filter(
-                approved=False).order_by('-created_at')
+        # if waiting is not None:
+        #     queryset = Article.objects.filter(
+        #         approved=False).order_by('-created_at')
         return queryset
 
     def retrieve(self, request, *args, **kwargs):
@@ -110,13 +111,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         user = Token.objects.get(key=request.data['token']).user
-        article = Review.objects.create(
+        article = Article.objects.create(
             author=user,
             title=request.data['title']
         )
         updateArticle(article, request)
-        user.profile.articles_count += 1
-        user.profile.save()
+        # user.profile.articles_count += 1
+        # user.profile.save()
         serializer = ArticleSerializer(article)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -134,61 +135,61 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    queryset = Review.objects.filter(
-        approved=True).order_by('-like_count', '-created_at')
+# class ReviewViewSet(viewsets.ModelViewSet):
+#     serializer_class = ReviewSerializer
+#     queryset = Review.objects.filter(
+#         approved=True).order_by('-like_count', '-created_at')
 
-    def get_queryset(self):
-        queryset = Review.objects.filter(
-            approved=True).order_by('-like_count', '-created_at')
-        author = self.request.query_params.get('author', None)
-        film = self.request.query_params.get('film', None)
-        title = self.request.query_params.get('title', None)
-        waiting = self.request.query_params.get('waiting', None)
-        if author is not None:
-            user = User.objects.get(id=int(author))
-            queryset = queryset.filter(author=user)
-        if film is not None:
-            film = Movie.objects.get(id=int(film))
-            queryset = queryset.filter(film=film)
-        if title is not None:
-            queryset = queryset.filter(title__icontains=title)
-        if waiting is not None:
-            queryset = Review.objects.filter(
-                approved=False).order_by('-created_at')
-        return queryset
+#     def get_queryset(self):
+#         queryset = Review.objects.filter(
+#             approved=True).order_by('-like_count', '-created_at')
+#         author = self.request.query_params.get('author', None)
+#         film = self.request.query_params.get('film', None)
+#         title = self.request.query_params.get('title', None)
+#         waiting = self.request.query_params.get('waiting', None)
+#         if author is not None:
+#             user = User.objects.get(id=int(author))
+#             queryset = queryset.filter(author=user)
+#         if film is not None:
+#             film = Movie.objects.get(id=int(film))
+#             queryset = queryset.filter(film=film)
+#         if title is not None:
+#             queryset = queryset.filter(title__icontains=title)
+#         if waiting is not None:
+#             queryset = Review.objects.filter(
+#                 approved=False).order_by('-created_at')
+#         return queryset
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.view_count = instance.view_count + 1
-        instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+#     def retrieve(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         instance.view_count = instance.view_count + 1
+#         instance.save()
+#         serializer = self.get_serializer(instance)
+#         return Response(serializer.data)
 
-    def create(self, request, *args, **kwargs):
-        user = Token.objects.get(key=request.data['token']).user
-        film = Movie.objects.get(id=int(request.data['film']))
-        review = Review.objects.create(
-            author=user,
-            film=film
-        )
-        updateArticle(review, request)
-        serializer = ReviewSerializer(review)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+#     def create(self, request, *args, **kwargs):
+#         user = Token.objects.get(key=request.data['token']).user
+#         film = Movie.objects.get(id=int(request.data['film']))
+#         review = Review.objects.create(
+#             author=user,
+#             film=film
+#         )
+#         updateArticle(review, request)
+#         serializer = ReviewSerializer(review)
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def update(self, request, *args, **kwargs):
-        review = self.get_object()
-        # user = Token.objects.get(key=request.data['token']).user
-        if 'approved' in request.data:
-            review.approved = True
-            review.author.profile.reviews_count += 1
-            review.author.profile.save()
-        updateArticle(review, request)
-        serializer = ReviewSerializer(review)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+#     def update(self, request, *args, **kwargs):
+#         review = self.get_object()
+#         # user = Token.objects.get(key=request.data['token']).user
+#         if 'approved' in request.data:
+#             review.approved = True
+#             review.author.profile.reviews_count += 1
+#             review.author.profile.save()
+#         updateArticle(review, request)
+#         serializer = ReviewSerializer(review)
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 def updateArticle(article, request):
@@ -198,22 +199,6 @@ def updateArticle(article, request):
         article.outline = request.data['outline']
     if 'content' in request.data:
         article.content = request.data['content']
-    # if 'score' in request.data:
-    #     article.score = int(request.data['score'])
-    #     score = article.author.profile.scores.all().filter(film=article.film).first()
-    #     if int(request.data['score']) > 0:
-    #         if score is not None:
-    #             score.user_score = int(request.data['score'])
-    #             score.save()
-    #         else:
-    #             score = Score.objects.create(
-    #                 film=article.film, user_score=int(request.data['score']))
-    #             article.author.profile.scores.add(score)
-    #             article.author.profile.save()
-    #     else:
-    #         if score is not None:
-    #             Score.objects.filter(id=score.id).delete()
-    #     calculateScore(article.film)
     if 'thumbnail' in request.data:
         article.thumbnail = request.data['thumbnail']
     article.save()
