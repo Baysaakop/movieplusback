@@ -24,6 +24,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         scorefrom = self.request.query_params.get('scorefrom', None)
         scoreto = self.request.query_params.get('scoreto', None)
         order = self.request.query_params.get('order', None)
+        length = self.request.query_params.get('length', None)
         user = self.request.query_params.get('user', None)
         action = self.request.query_params.get('action', None)
         if title is not None:
@@ -65,6 +66,8 @@ class MovieViewSet(viewsets.ModelViewSet):
             queryset = list
         if order is not None:
             queryset = queryset.order_by(order).distinct()
+        if length is not None:
+            queryset = queryset[0:int(length)]
         return queryset
 
     def retrieve(self, request, *args, **kwargs):

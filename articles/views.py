@@ -91,12 +91,15 @@ class ArticleViewSet(viewsets.ModelViewSet):
         queryset = Article.objects.order_by('-created_at')
         author = self.request.query_params.get('author', None)
         title = self.request.query_params.get('title', None)
+        length = self.request.query_params.get('length', None)
         # waiting = self.request.query_params.get('waiting', None)
         if author is not None:
             user = User.objects.get(id=int(author))
             queryset = queryset.filter(author=user)
         if title is not None:
             queryset = queryset.filter(title__icontains=title)
+        if length is not None:
+            queryset = queryset[0:int(length)]
         # if waiting is not None:
         #     queryset = Article.objects.filter(
         #         approved=False).order_by('-created_at')
