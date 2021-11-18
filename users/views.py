@@ -6,7 +6,7 @@ from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from .models import Profile, FilmScore, SeriesScore
+from .models import FilmDate, Profile, FilmScore, SeriesScore
 from .serializers import UserSerializer, ProfileSerializer
 from movies.models import Movie, Artist, Series
 from movies.serializers import MovieSerializer, ArtistSerializer, SeriesSerializer
@@ -96,6 +96,23 @@ class UserViewSet(viewsets.ModelViewSet):
         if 'film' in request.data:
             film_id = request.data['film']
             film = Movie.objects.get(id=int(film_id))
+            if 'watched' in request.data:
+                exists = False
+                for item in user.profile.films_watched.all():
+                    if item.film == film:
+                        exists = True
+                        user.profile.films_watched.remove(item)
+                        FilmDate.objects.filter(id=item.id).delete()
+                        film.watched_count -= 1
+                        flag = False
+                if exists is False:
+                    obj = FilmDate.objects.create(film=film)
+                    if 'date' in request.data:
+                        date = request.data['date']
+                        obj.date = date
+                        obj.save()
+                    user.profile.films_watched.add(obj)
+                    film.watched_count += 1
             if 'like' in request.data:
                 if film in user.profile.films_liked.all():
                     user.profile.films_liked.remove(film)
@@ -104,14 +121,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 else:
                     user.profile.films_liked.add(film)
                     film.like_count += 1
-            if 'watched' in request.data:
-                if film in user.profile.films_watched.all():
-                    user.profile.films_watched.remove(film)
-                    film.watched_count -= 1
-                    flag = False
-                else:
-                    user.profile.films_watched.add(film)
-                    film.watched_count += 1
             if 'watchlist' in request.data:
                 if film in user.profile.films_watchlist.all():
                     user.profile.films_watchlist.remove(film)

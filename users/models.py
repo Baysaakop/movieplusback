@@ -17,6 +17,11 @@ def user_directory_path(instance, filename):
     return 'users/{0}/{1}'.format(instance.user.id, filename)
 
 
+class FilmDate(models.Model):
+    film = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    date = models.DateField(auto_now=False, null=True, blank=True)
+
+
 class FilmScore(models.Model):
     film = models.ForeignKey(Movie, on_delete=models.CASCADE)
     user_score = models.IntegerField(default=0)
@@ -43,10 +48,10 @@ class Profile(models.Model):
     artists_followed = models.ManyToManyField(
         Artist, related_name="artists_followed", null=True, blank=True)
     # Film lists
+    films_watched = models.ManyToManyField(
+        FilmDate, related_name="films_watched", null=True, blank=True)
     films_liked = models.ManyToManyField(
         Movie, related_name="films_liked", null=True, blank=True)
-    films_watched = models.ManyToManyField(
-        Movie, related_name="films_watched", null=True, blank=True)
     films_watchlist = models.ManyToManyField(
         Movie, related_name="films_watchlist", null=True, blank=True)
     film_scores = models.ManyToManyField(FilmScore, null=True, blank=True)

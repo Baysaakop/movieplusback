@@ -52,8 +52,8 @@ class MovieViewSet(viewsets.ModelViewSet):
             user_obj = User.objects.get(pk=int(user))
             list = []
             if action == "watched":
-                for film in reversed(user_obj.profile.films_watched.all()):
-                    list.append(film)
+                for item in reversed(user_obj.profile.films_watched.all()):
+                    list.append(item.film)
             elif action == "liked":
                 for film in reversed(user_obj.profile.films_liked.all()):
                     list.append(film)
