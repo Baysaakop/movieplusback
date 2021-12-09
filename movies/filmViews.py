@@ -63,6 +63,12 @@ class MovieViewSet(viewsets.ModelViewSet):
             elif action == "scores":
                 for score in reversed(user_obj.profile.film_scores.all()):
                     list.append(score.film)
+            elif action == "scoresFromTop":
+                for score in user_obj.profile.film_scores.all().order_by('-user_score'):
+                    list.append(score.film)
+            elif action == "scoresFromBot":
+                for score in user_obj.profile.film_scores.all().order_by('user_score'):
+                    list.append(score.film)
             queryset = list
         if order is not None:
             queryset = queryset.order_by(order).distinct()
