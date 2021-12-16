@@ -92,20 +92,38 @@ class Tag(models.Model):
 
 class Theater(models.Model):
     name = models.CharField(max_length=50)
-    logo = models.ImageField(
-        upload_to='theaters/%Y/%m/%d', null=True, blank=True)
+    logo = models.CharField(max_length=200, default="")
+    background = models.CharField(max_length=100, default="#000")
 
     def __str__(self):
         return self.name
+
+
+class TheaterUrl(models.Model):
+    url = models.CharField(max_length=200)
+    theater = models.ForeignKey(
+        Theater, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.url
 
 
 class Platform(models.Model):
     name = models.CharField(max_length=50)
-    logo = models.ImageField(
-        upload_to='platforms/%Y/%m/%d', null=True, blank=True)
+    logo = models.CharField(max_length=200, default="")
+    background = models.CharField(max_length=100, default="#000")
 
     def __str__(self):
         return self.name
+
+
+class PlatformUrl(models.Model):
+    url = models.CharField(max_length=200)
+    platform = models.ForeignKey(
+        Platform, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.url
 
 
 class Movie(models.Model):
@@ -135,8 +153,8 @@ class Movie(models.Model):
     trailer = models.CharField(max_length=200, null=True, blank=True)
     is_released = models.BooleanField(default=True)
     in_theater = models.BooleanField(default=False)
-    theaters = models.ManyToManyField(Theater, null=True, blank=True)
-    platforms = models.ManyToManyField(Platform, null=True, blank=True)
+    theaters = models.ManyToManyField(TheaterUrl, null=True, blank=True)
+    platforms = models.ManyToManyField(PlatformUrl, null=True, blank=True)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='movie_created_by')
     created_at = models.DateTimeField(auto_now_add=True, null=True)

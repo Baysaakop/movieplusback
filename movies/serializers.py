@@ -1,7 +1,7 @@
 from re import T
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from .models import Genre, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Review, Movie, Series, CastMember, CrewMember
+from .models import Genre, PlatformUrl, Tag, Theater, Platform, Rating, Production, Occupation, Artist, Review, Movie, Series, CastMember, CrewMember, TheaterUrl
 # from users.models import User, Profile
 from users.serializers import UserSerializer
 
@@ -21,13 +21,29 @@ class TagSerializer(serializers.ModelSerializer):
 class TheaterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Theater
-        fields = ('id', 'name', 'logo')
+        fields = ('id', 'name', 'logo', 'background')
+
+
+class TheaterUrlSerializer(serializers.ModelSerializer):
+    theater = TheaterSerializer(read_only=True)
+
+    class Meta:
+        model = TheaterUrl
+        fields = ('id', 'url', 'theater')
 
 
 class PlatformSerializer(serializers.ModelSerializer):
     class Meta:
         model = Platform
-        fields = ('id', 'name', 'logo')
+        fields = ('id', 'name', 'logo', 'background')
+
+
+class PlatformUrlSerializer(serializers.ModelSerializer):
+    platform = PlatformSerializer(read_only=True)
+
+    class Meta:
+        model = PlatformUrl
+        fields = ('id', 'url', 'platform')
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -75,8 +91,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MovieSerializer(serializers.ModelSerializer):
     rating = RatingSerializer(read_only=True)
     genres = GenreSerializer(read_only=True, many=True)
-    theaters = TheaterSerializer(read_only=True, many=True)
-    platforms = PlatformSerializer(read_only=True, many=True)
+    theaters = TheaterUrlSerializer(read_only=True, many=True)
+    platforms = PlatformUrlSerializer(read_only=True, many=True)
     productions = ProductionSerializer(read_only=True, many=True)
     # reviews = ReviewSerializer(read_only=True, many=True)
 

@@ -1,4 +1,4 @@
-from .views import GenreViewSet, RatingViewSet, ProductionViewSet, ReviewViewSet, OccupationViewSet, CastMemberViewSet, CrewMemberViewSet
+from .views import GenreViewSet, RatingViewSet, ProductionViewSet, ReviewViewSet, OccupationViewSet, TheaterViewSet, PlatformViewSet, CastMemberViewSet, CrewMemberViewSet
 from .artistViews import ArtistViewSet
 from .filmViews import MovieViewSet
 from .seriesViews import SeriesViewSet
@@ -11,6 +11,8 @@ router.register(r'productions', ProductionViewSet, basename='productions')
 router.register(r'occupations', OccupationViewSet, basename='occupations')
 # router.register(r'comments', ReviewViewSet, basename='comments')
 router.register(r'reviews', ReviewViewSet, basename='reviews')
+router.register(r'theaters', TheaterViewSet, basename='theaters')
+router.register(r'platforms', PlatformViewSet, basename='platforms')
 router.register(r'artists', ArtistViewSet, basename='artists')
 router.register(r'films', MovieViewSet, basename='films')
 router.register(r'series', SeriesViewSet, basename='series')

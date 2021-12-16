@@ -126,6 +126,16 @@ class OccupationViewSet(viewsets.ModelViewSet):
     queryset = Occupation.objects.all().order_by('name')
 
 
+class TheaterViewSet(viewsets.ModelViewSet):
+    serializer_class = TheaterSerializer
+    queryset = Theater.objects.all().order_by('name')
+
+
+class PlatformViewSet(viewsets.ModelViewSet):
+    serializer_class = PlatformSerializer
+    queryset = Platform.objects.all().order_by('name')
+
+
 class MemberPagination(pagination.PageNumberPagination):
     page_size = 100
 

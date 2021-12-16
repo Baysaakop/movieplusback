@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .models import Movie, Rating, Genre
+from .models import Movie, Platform, PlatformUrl, Rating, Genre, Theater, TheaterUrl
 from .serializers import MovieSerializer
 from rest_framework import viewsets
 
@@ -157,15 +157,27 @@ def updateMovie(movie, request):
         tags = request.data['tags'].split(",")
         for item in tags:
             movie.tags.add(int(item))
-    if 'theaters' in request.data:
-        movie.theaters.clear()
-        theaters = request.data['theaters'].split(",")
-        for item in theaters:
-            movie.theaters.add(int(item))
-    if 'platforms' in request.data:
-        movie.platforms.clear()
-        platforms = request.data['platforms'].split(",")
-        for item in platforms:
-            movie.platforms.add(int(item))
+    if 'theater' in request.data:
+        theater = Theater.objects.get(id=int(request.data['theater']))
+        if 'delete' in request.data:
+            theaterurl = movie.theaters.filter(theater=theater)[0]
+            movie.theater.remove(theaterurl)
+        else:
+            theaterurl = TheaterUrl.objects.create(
+                theater=theater,
+                url=request.data['url']
+            )
+            movie.theaters.add(theaterurl)
+    if 'platform' in request.data:
+        platform = Platform.objects.get(id=int(request.data['platform']))
+        if 'delete' in request.data:
+            platformurl = movie.platforms.filter(platform=platform)[0]
+            movie.platforms.remove(platformurl)
+        else:
+            platformurl = PlatformUrl.objects.create(
+                platform=platform,
+                url=request.data['url']
+            )
+            movie.platforms.add(platformurl)
     movie.save()
     return movie
