@@ -26,20 +26,9 @@ class ArtistViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(Q(name__icontains=name) | Q(
                 name__icontains=string.capwords(name))).distinct()
         if occupation is not None:
-            queryset = queryset.filter(occupation__id=occupation)
+            queryset = queryset.filter(occupations__id=occupation)
         if order is not None:
-            if (order == 'created_at'):
-                queryset = queryset.order_by('-created_at')
-            elif (order == 'birthday'):
-                queryset = queryset.order_by('-birthday')
-            elif (order == 'name'):
-                queryset = queryset.order_by('name')
-            elif (order == 'views'):
-                queryset = queryset.order_by('-views')
-            elif (order == 'likes'):
-                queryset = queryset.order_by('-likes')
-            elif (order == 'follows'):
-                queryset = queryset.order_by('-follows')
+            queryset = queryset.order_by(order).distinct()
         return queryset
 
     def retrieve(self, request, *args, **kwargs):
