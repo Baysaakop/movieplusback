@@ -11,8 +11,7 @@ from .models import (
     Occupation, CastMember, CrewMember
 )
 from .serializers import (
-    ReviewSerializer, GenreSerializer, TagSerializer, TheaterSerializer,
-    PlatformSerializer, RatingSerializer, ProductionSerializer,
+    ReviewSerializer, GenreSerializer, TagSerializer, PlatformSerializer, RatingSerializer, ProductionSerializer,
     OccupationSerializer, CastMemberSerializer, CrewMemberSerializer
 )
 from rest_framework import viewsets
@@ -124,11 +123,6 @@ class ProductionViewSet(viewsets.ModelViewSet):
 class OccupationViewSet(viewsets.ModelViewSet):
     serializer_class = OccupationSerializer
     queryset = Occupation.objects.all().order_by('name')
-
-
-class TheaterViewSet(viewsets.ModelViewSet):
-    serializer_class = TheaterSerializer
-    queryset = Theater.objects.all().order_by('name')
 
 
 class PlatformViewSet(viewsets.ModelViewSet):

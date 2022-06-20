@@ -9,27 +9,13 @@ from users.serializers import UserSerializer
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('id', 'name', 'description', 'count')
+        fields = ('id', 'name', 'description')
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name')
-
-
-class TheaterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Theater
-        fields = ('id', 'name', 'logo', 'background')
-
-
-class TheaterUrlSerializer(serializers.ModelSerializer):
-    theater = TheaterSerializer(read_only=True)
-
-    class Meta:
-        model = TheaterUrl
-        fields = ('id', 'url', 'theater')
 
 
 class PlatformSerializer(serializers.ModelSerializer):
@@ -49,19 +35,19 @@ class PlatformUrlSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ('id', 'name', 'description', 'count')
+        fields = ('id', 'name', 'description')
 
 
 class ProductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Production
-        fields = ('id', 'name', 'description', 'count')
+        fields = ('id', 'name', 'description')
 
 
 class OccupationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Occupation
-        fields = ('id', 'name', 'description', 'count')
+        fields = ('id', 'name', 'description')
 
 
 class ArtistSerializer(serializers.ModelSerializer):
@@ -91,7 +77,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MovieSerializer(serializers.ModelSerializer):
     rating = RatingSerializer(read_only=True)
     genres = GenreSerializer(read_only=True, many=True)
-    theaters = TheaterUrlSerializer(read_only=True, many=True)
     platforms = PlatformUrlSerializer(read_only=True, many=True)
     productions = ProductionSerializer(read_only=True, many=True)
     # reviews = ReviewSerializer(read_only=True, many=True)
@@ -100,7 +85,7 @@ class MovieSerializer(serializers.ModelSerializer):
         model = Movie
         fields = (
             'id', 'title', 'description', 'plot', 'duration', 'releasedate',
-            'rating', 'genres', 'tags', 'productions', 'theaters', 'platforms',
+            'rating', 'genres', 'tags', 'productions', 'platforms',
             'view_count', 'like_count', 'watched_count', 'watchlist_count',
             'score_count', 'review_count', 'avg_score', 'poster', 'landscape',
             'trailer', 'is_released', 'in_theater', 'reviews',

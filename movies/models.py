@@ -6,7 +6,6 @@ from djrichtextfield.models import RichTextField
 class Genre(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -15,7 +14,6 @@ class Genre(models.Model):
 class Rating(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -24,7 +22,6 @@ class Rating(models.Model):
 class Production(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -33,7 +30,6 @@ class Production(models.Model):
 class Occupation(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -137,6 +133,11 @@ class Movie(models.Model):
     genres = models.ManyToManyField(Genre, null=True, blank=True)
     tags = models.ManyToManyField(Tag, null=True, blank=True)
     productions = models.ManyToManyField(Production, null=True, blank=True)
+    poster = models.ImageField(
+        upload_to='movies/%Y/%m/%d', null=True, blank=True)
+    landscape = models.ImageField(
+        upload_to='movies/%Y/%m/%d', null=True, blank=True)
+    trailer = models.CharField(max_length=200, null=True, blank=True)
     view_count = models.IntegerField(default=0)
     like_count = models.IntegerField(default=0)
     watched_count = models.IntegerField(default=0)
@@ -146,11 +147,6 @@ class Movie(models.Model):
     reviews = models.ManyToManyField(
         Review, null=True, blank=True, related_name="film_reviews")
     avg_score = models.IntegerField(default=0)
-    poster = models.ImageField(
-        upload_to='movies/%Y/%m/%d', null=True, blank=True)
-    landscape = models.ImageField(
-        upload_to='movies/%Y/%m/%d', null=True, blank=True)
-    trailer = models.CharField(max_length=200, null=True, blank=True)
     is_released = models.BooleanField(default=True)
     in_theater = models.BooleanField(default=False)
     theaters = models.ManyToManyField(TheaterUrl, null=True, blank=True)
